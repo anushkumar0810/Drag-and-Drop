@@ -71,26 +71,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // Simplified openGallery function to directly launch the gallery
     private fun openGallery() {
-        when {
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE -> {
-                if (checkSelfPermission(android.Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED) == PackageManager.PERMISSION_GRANTED) {
-                    galleryLauncher.launch(arrayOf("image/*"))
-                } else {
-                    requestPermissions(arrayOf(android.Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED), 102)
-                }
-            }
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.M -> {
-                if (checkSelfPermission(android.Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                    galleryLauncher.launch(arrayOf("image/*"))
-                } else {
-                    requestPermissions(arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE), 101)
-                }
-            }
-            else -> {
-                galleryLauncher.launch(arrayOf("image/*"))
-            }
-        }
+        galleryLauncher.launch(arrayOf("image/*"))
     }
 
     private fun showMenuBottomSheet() {
@@ -115,14 +98,5 @@ class MainActivity : AppCompatActivity() {
 
         dialog.show()
     }
-
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if ((requestCode == 101 || requestCode == 102) && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            openGallery()
-        } else {
-            Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show()
-        }
-    }
 }
+
