@@ -1,6 +1,8 @@
 package com.anush.dragdrop
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
@@ -16,7 +18,8 @@ import java.util.*
 class ImageAdapter(
     private val context: Context,
     private val items: MutableList<ImageItem>,
-    private val onAddClicked: () -> Unit
+    private val onAddClicked: () -> Unit,
+    private val onImageChanged: () -> Unit
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     inner class ImageViewHolder(private val binding: ItemImageBinding) :
@@ -100,6 +103,7 @@ class ImageAdapter(
         notifyDataSetChanged()
     }
 
+    @SuppressLint("MissingInflatedId")
     private fun showBottomSheet(position: Int) {
         val dialog = BottomSheetDialog(context)
         val view = LayoutInflater.from(context).inflate(R.layout.bottom_sheet_menu, null)
@@ -136,10 +140,20 @@ class ImageAdapter(
                 notifyItemRemoved(position)
                 notifyItemChanged(0)
             }
-
+            onImageChanged()
             dialog.dismiss()
         }
 
+        view.findViewById<TextView>(R.id.viewImage).setOnClickListener {
+            val uri = (items[position] as? ImageItem.UriItem)?.uri ?: return@setOnClickListener
+            val intent = Intent(context, ImageViewActivity::class.java).apply {
+                putExtra("image_uri", uri)
+                putExtra("image_index", position)
+                putExtra("total_count", items.count { it is ImageItem.UriItem })
+            }
+            context.startActivity(intent)
+            dialog.dismiss()
+        }
 
         dialog.show()
     }

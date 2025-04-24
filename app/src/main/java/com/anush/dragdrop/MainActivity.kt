@@ -1,5 +1,6 @@
 package com.anush.dragdrop
 
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
@@ -27,6 +28,7 @@ class MainActivity : AppCompatActivity() {
             if (validNewUris.isNotEmpty()) {
                 imageUris.addAll(validNewUris)
                 adapter.appendImageUris(validNewUris)
+                updateImageCount()
             } else {
                 Toast.makeText(this, "No new images selected", Toast.LENGTH_SHORT).show()
             }
@@ -37,7 +39,9 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        adapter = ImageAdapter(this, imageItems) { openGallery() }
+        adapter = ImageAdapter(this, imageItems, { openGallery() }) {
+            updateImageCount()
+        }
 
         binding.recyclerView.layoutManager = GridLayoutManager(this, 2)
         binding.recyclerView.adapter = adapter
@@ -71,6 +75,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun updateImageCount() {
+        val imageCount = imageItems.count { it is ImageItem.UriItem }
+        binding.countTxt.text = "$imageCount selected"
+    }
+
     // Simplified openGallery function to directly launch the gallery
     private fun openGallery() {
         galleryLauncher.launch(arrayOf("image/*"))
@@ -83,9 +92,19 @@ class MainActivity : AppCompatActivity() {
 
         val addPhotos = view.findViewById<TextView>(R.id.optionAddPhotos)
         val deleteAll = view.findViewById<TextView>(R.id.optionDeleteAll)
+        val viewAllImages = view.findViewById<TextView>(R.id.viewAllImages)
 
         addPhotos.setOnClickListener {
             openGallery()
+            dialog.dismiss()
+        }
+
+        viewAllImages.setOnClickListener {
+            val intent = Intent(this, ImageViewActivity::class.java)
+            intent.putExtra("multi_view", true)
+            intent.putStringArrayListExtra("uri_list", ArrayList(imageUris.map { it.toString() }))
+            intent.putExtra("start_index", 0)
+            startActivity(intent)
             dialog.dismiss()
         }
 
@@ -93,6 +112,7 @@ class MainActivity : AppCompatActivity() {
             imageItems.clear()
             imageUris.clear()
             adapter.notifyDataSetChanged()
+            updateImageCount()
             dialog.dismiss()
         }
 
